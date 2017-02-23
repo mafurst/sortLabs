@@ -35,26 +35,38 @@ bool createDirectory(string dirName);
 bool copyFile(string fileSrc, string fileDest);
 
 #ifdef _WIN32
-/*Windows does not need a reformat, as it will recognize a 
-  file path with \, / or both.
+/*
+* Windows does not need a reformat, as it will recognize a 
+* file path with \, / or both.
 */
 bool createDirectory(string dirName) {
+	//Use bool CreateDirectory function built into windows
 	return CreateDirectoryA(dirName.c_str(),NULL);
 }
 bool copyFile(string fileSrc, string fileDest) {
+	//Use bool CopyFile function built into windows
 	return CopyFileA(fileSrc.c_str(),fileDest.c_str(),false);
 }
 #elif __APPLE__
-void reformatUnix(string *filePath) {//reformat so / becomes \ to prevent directory issues
+/*
+* reformatUnix and createDirectory exists the same in both Apple and Linux sections.
+*  I am not putting them in a container that reaches all UNIX systems becuase this code 
+* does not have full UNIX support, and I do not want anyone to be confused into thinking
+* that.
+*/
+void reformatUnix(string *filePath) {
+	//reformat so / becomes \ to prevent directory issues, only neccessary on UNIX systems
 	for (int i=0;i<filePath->length();i++) {
 		if ((*filePath)[i]=='\\')(*filePath)[i]='/';
 	}	
 }
 bool createDirectory(string dirName) {
 	reformatUnix(&dirName);
+	//use mkdir function
 	if (mkdir(dirName.c_str(),0777)) {
 		return false;
 	}
+	//use chmod function to ensure proper permissions
 	if (chmod(dirName.c_str(),07777)) {
 		return false;
 	}
@@ -63,31 +75,35 @@ bool createDirectory(string dirName) {
 bool copyFile(string fileSrc, string fileDest) {
 	reformatUnix(&fileSrc);
 	reformatUnix(&fileDest);
+	//try to use the macOS copyfile function, which returns 0 on success
 	if (copyfile(fileSrc.c_str(),fileDest.c_str(),copyfile_state_alloc(),COPYFILE_ALL)==0) {
 		return true;
 	}
 	else {
-		//macOS limits the amount of calls to copyfile, so in the case it fails, we attempt to run it with bash
+		//macOS limits the amount of calls to copyfile, so in the case it fails, we attempt to run a copy with bash
 		string bashCommand = "cp -f \"";
 		bashCommand+=fileSrc;
 		bashCommand+="\" \"";
 		bashCommand+=fileDest;
 		bashCommand+="\"";
 		int check = system(bashCommand.c_str()); //get the return of the cp command
-		return (check==0);//cp exits 0 on success
+		return (check==0);//cp exits 0 on success, so return true if the check is 0
 	}
 }
 #elif __linux__
-void reformatUnix(string *filePath) {//reformat so / becomes \ to prevent directory issues
+void reformatUnix(string *filePath) {
+	//reformat so / becomes \ to prevent directory issues, only neccessary on UNIX systems
 	for (int i=0;i<filePath->length();i++) {
 		if ((*filePath)[i]=='\\')(*filePath)[i]='/';
 	}
 }
 bool createDirectory(string dirName) {
 	reformatUnix(&dirName);
+	//use mkdir function
 	if (mkdir(dirName.c_str(),0777)) {
 		return false;
 	}
+	//use chmod function to ensure proper permissions
 	if (chmod(dirName.c_str(),07777)) {
 		return false;
 	}
@@ -96,18 +112,23 @@ bool createDirectory(string dirName) {
 bool copyFile(string fileSrc, string fileDest) {
 	reformatUnix(&fileSrc);
 	reformatUnix(&fileDest);
-	int read_fd;
-	int write_fd;
+	//create read and write file variables
+	int read;
+	int write;
+	//create stat structure and off_t structure
 	struct stat stat_buf;
 	off_t offset = 0;
-
-	read_fd = open (fileSrc.c_str(), O_RDONLY);
-	fstat (read_fd, &stat_buf);
-	write_fd = open (fileDest.c_str(), O_WRONLY | O_CREAT, stat_buf.st_mode);
-	sendfile (write_fd, read_fd, &offset, stat_buf.st_size);
-
-	close (read_fd);
-	close (write_fd);
+	//open read file
+	read = open (fileSrc.c_str(), O_RDONLY);
+	//get the file stats for the read file into the stat structure
+	fstat (read, &stat_buf);
+	//open/create the write file with same attributes as the read file
+	write = open (fileDest.c_str(), O_WRONLY | O_CREAT, stat_buf.st_mode);
+	//use sendfile command to send the read file to the write file
+	sendfile (write, read, &offset, stat_buf.st_size);
+	//close read and write files
+	close (read);
+	close (write);
 }
 #endif
 
