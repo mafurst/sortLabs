@@ -35,6 +35,7 @@ bool createDirectory(string dirName);
 bool copyFile(string fileSrc, string fileDest);
 
 #ifdef _WIN32
+char fileSeperator='\\'; // make sure proper file seperators
 bool createDirectory(string dirName) {
 	return CreateDirectoryA(dirName.c_str(),NULL);
 }
@@ -42,6 +43,7 @@ bool copyFile(string fileSrc, string fileDest) {
 	return CopyFileA(fileSrc.c_str(),fileDest.c_str(),false);
 }
 #elif __APPLE__
+char fileSeperator='/';
 void reformatUnix(string *filePath) {//reformat so / becomes \ to prevent directory issues
 	for (int i=0;i<filePath->length();i++) {
 		if ((*filePath)[i]=='\\')(*filePath)[i]='/';
@@ -63,6 +65,7 @@ bool copyFile(string fileSrc, string fileDest) {
 	return (copyfile(fileSrc.c_str(),fileDest.c_str(),copyfile_state_alloc(),COPYFILE_ALL)==0);
 }
 #elif __linux__
+char fileSeperator='/';
 void reformatUnix(string *filePath) {//reformat so / becomes \ to prevent directory issues
 	for (int i=0;i<filePath->length();i++) {
 		if ((*filePath)[i]=='\\')(*filePath)[i]='/';
@@ -123,11 +126,11 @@ int main(int argc, char** argv) {
 				if (pos!=-1) {
 					cout << fileName.substr(0,pos) << endl;//output the name
 					string filePath=argv[1];
-					filePath+="\\";
+					filePath+=fileSeperator;
 					filePath+=fileName.substr(0,pos);
 					if (opendir(filePath.c_str())==NULL) {//check if dir already exists
 						string dirName = argv[1];
-						dirName+="\\"+fileName.substr(0,pos);
+						dirName+=fileSeperator+fileName.substr(0,pos);
 						createDirectory(dirName);
 					}
 					//Get the new file name as just the file name
@@ -146,10 +149,14 @@ int main(int argc, char** argv) {
 
 					//copy the file
 					string file1=argv[1];
-					file1+="\\"+fileName;
-					string file2 = filePath+"\\" + newFileName;
+					file1+=fileSeperator+fileName;
+					string file2 = filePath + fileSeperator + newFileName;
 					if (copyFile(file1,file2)) {
 						cout << "File Copied Successfully!" << endl;
+					}
+					else {
+						cout << "File Not Copied Successfully!" << endl;
+						cout << "--" << file1 << " --" << file2 << endl;
 					}
 				}
 			}
