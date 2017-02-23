@@ -35,7 +35,9 @@ bool createDirectory(string dirName);
 bool copyFile(string fileSrc, string fileDest);
 
 #ifdef _WIN32
-char fileSeperator='\\'; // make sure proper file seperators
+/*Windows does not need a reformat, as it will recognize a 
+  file path with \, / or both.
+*/
 bool createDirectory(string dirName) {
 	return CreateDirectoryA(dirName.c_str(),NULL);
 }
@@ -43,7 +45,6 @@ bool copyFile(string fileSrc, string fileDest) {
 	return CopyFileA(fileSrc.c_str(),fileDest.c_str(),false);
 }
 #elif __APPLE__
-char fileSeperator='/';
 void reformatUnix(string *filePath) {//reformat so / becomes \ to prevent directory issues
 	for (int i=0;i<filePath->length();i++) {
 		if ((*filePath)[i]=='\\')(*filePath)[i]='/';
@@ -62,10 +63,21 @@ bool createDirectory(string dirName) {
 bool copyFile(string fileSrc, string fileDest) {
 	reformatUnix(&fileSrc);
 	reformatUnix(&fileDest);
-	return (copyfile(fileSrc.c_str(),fileDest.c_str(),copyfile_state_alloc(),COPYFILE_ALL)==0);
+	if (copyfile(fileSrc.c_str(),fileDest.c_str(),copyfile_state_alloc(),COPYFILE_ALL)==0) {
+		return true;
+	}
+	else {
+		//macOS limits the amount of calls to copyfile, so in the case it fails, we attempt to run it with bash
+		string bashCommand = "cp -f \"";
+		bashCommand+=fileSrc;
+		bashCommand+="\" \"";
+		bashCommand+=fileDest;
+		bashCommand+="\"";
+		int check = system(bashCommand.c_str()); //get the return of the cp command
+		return (check==0);//cp exits 0 on success
+	}
 }
 #elif __linux__
-char fileSeperator='/';
 void reformatUnix(string *filePath) {//reformat so / becomes \ to prevent directory issues
 	for (int i=0;i<filePath->length();i++) {
 		if ((*filePath)[i]=='\\')(*filePath)[i]='/';
@@ -126,11 +138,11 @@ int main(int argc, char** argv) {
 				if (pos!=-1) {
 					cout << fileName.substr(0,pos) << endl;//output the name
 					string filePath=argv[1];
-					filePath+=fileSeperator;
+					filePath+="/";
 					filePath+=fileName.substr(0,pos);
 					if (opendir(filePath.c_str())==NULL) {//check if dir already exists
 						string dirName = argv[1];
-						dirName+=fileSeperator+fileName.substr(0,pos);
+						dirName+="/"+fileName.substr(0,pos);
 						createDirectory(dirName);
 					}
 					//Get the new file name as just the file name
@@ -149,8 +161,8 @@ int main(int argc, char** argv) {
 
 					//copy the file
 					string file1=argv[1];
-					file1+=fileSeperator+fileName;
-					string file2 = filePath + fileSeperator + newFileName;
+					file1+="/"+fileName;
+					string file2 = filePath + "/" + newFileName;
 					if (copyFile(file1,file2)) {
 						cout << "File Copied Successfully!" << endl;
 					}
