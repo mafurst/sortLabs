@@ -149,7 +149,7 @@ int main(int argc, char** argv) {
 	if (argc!=2)return -1;//requires directory as argument or does nothing
 	DIR *dir;
 	struct dirent *ent;
-	if ((dir=opendir(argv[1])) != NULL) {//check if able to open the directory
+	if ((dir=opendir(argv[1])) != NULL) {//check if able to open the directory passed as an argument
 		while ((ent=readdir(dir)) != NULL) {//run to read all files in the directory
 			if (opendir(ent->d_name)==NULL) {//make sure that the file is a file, not a directory
 				string fileName = ent->d_name;
