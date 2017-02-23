@@ -52,3 +52,7 @@ Submissions
 -->Square.java
 
 -->Triangle.java
+
+
+
+If you are interested in using this program you can download the source and build it yourself, or you can grap a precompiled version of it from the releases page. There is a 32-bit Windows executable (Will run on any 32 or 64-bit Windows), an OSX version (tested on OSX Sierra, but should work fine on others), and a Linux version downloadable from the page.
