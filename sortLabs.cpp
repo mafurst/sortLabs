@@ -45,7 +45,7 @@ bool copyFile(string fileSrc, string fileDest) {
 void reformatUnix(string *filePath) {//reformat so / becomes \ to prevent directory issues
 	for (int i=0;i<filePath->length();i++) {
 		if ((*filePath)[i]=='\\')(*filePath)[i]='/';
-	}
+	}	
 }
 bool createDirectory(string dirName) {
 	reformatUnix(&dirName);
@@ -130,7 +130,6 @@ int main(int argc, char** argv) {
 					}
 					//Get the new file name as just the file name
 					string newFileName = fileName;
-					cout << fileName << endl;
 					while ( (pos=findIndex(newFileName,'_')) != -1) {
 						newFileName = newFileName.substr(pos+1);
 					}
@@ -141,6 +140,7 @@ int main(int argc, char** argv) {
 							newFileName = newFileName.substr(0,pos) + newFileName.substr(dotPos);
 						}
 					}
+					cout << newFileName << endl;
 
 					//copy the file
 					string file1=argv[1];
