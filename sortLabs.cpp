@@ -55,6 +55,7 @@ bool createDirectory(string dirName) {
 	if (chmod(dirName.c_str(),07777)) {
 		return false;
 	}
+	return true;
 }
 bool copyFile(string fileSrc, string fileDest) {
 	reformatUnix(&fileSrc);
@@ -75,6 +76,7 @@ bool createDirectory(string dirName) {
 	if (chmod(dirName.c_str(),07777)) {
 		return false;
 	}
+	return true;
 }
 bool copyFile(string fileSrc, string fileDest) {
 	reformatUnix(&fileSrc);
