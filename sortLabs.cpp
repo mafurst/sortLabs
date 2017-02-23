@@ -3,7 +3,9 @@
 * The purpose of this program is to sort lab submissions downloaded from canvas. This file is programmed to
 * support Windows, OSX, and Linux environments. For windows compilation you will need to obtain a local 
 * version of dirent.h. I recommend Toni Ronko's version: https://github.com/tronkko/dirent
-* This code has been tested on each platform supported, but if you find any bugs you
+* This code has been tested on each platform supported, but if you find any bugs you may submit the issues
+* to this project on GitHub. 
+* https://github.com/mafurst/sortLabs
 */
 
 #ifdef _WIN32
