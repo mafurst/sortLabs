@@ -5,7 +5,7 @@
 * version of dirent.h. I recommend Toni Ronko's version: https://github.com/tronkko/dirent
 * This code has been tested on each platform supported, but if you find any bugs you may submit the issues
 * to this project on GitHub. 
-* https://github.com/mafurst/sortLabs
+* https://github.com/mikefurst/sortLabs
 */
 
 #ifdef _WIN32
